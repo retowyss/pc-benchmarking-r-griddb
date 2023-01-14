@@ -105,14 +105,14 @@ capframex_data$sensors %>%
 
 ## Loading CapFrameX data into GridDB
 
-We create three tables (Info, Caputre, and Sensor) in our GridDB and the we 
+We create three tables (Info, Capture, and Sensor) in our GridDB and the we 
 build an insert function to populate the tables with a json file. In the Process
 we also need add ids to properly reference our relational data points.
 
 
 ```{r, message=FALSE}
 # We are using a docker based setup that can run this project ootb
-# it available here: https://github.com/retowyss/rstudio-server-griddb-docker
+# it's available here: https://github.com/retowyss/rstudio-server-griddb-docker
 
 library(RJDBC)
 drv <- JDBC(
