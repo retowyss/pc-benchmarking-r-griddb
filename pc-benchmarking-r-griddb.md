@@ -151,7 +151,7 @@ capframex_data$sensors %>%
 |       0.265|              0.261|  108.1045|          61.625|    1961.5|   211.884|              80|
 
 The sensor data's `MeasureTime` is like the capture data's `TimeInSeconds`; it tells the time since the session start. However, because the sensor data is polled in fixed intervals and not when a 
-new frame is generated, so the data-points don't related one-to-one.
+new frame is generated, so the data-points don't relate one-to-one.
 
 * `MeasureTime`: Time in seconds since the session was started
 * `BetweenMeasureTime`: exact time since previous measurement (approximately 250ms)
