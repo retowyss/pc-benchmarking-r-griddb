@@ -166,7 +166,7 @@ new frame is generated, so the data-points don't related one-to-one.
 
 We create three tables (Info, Capture, and Sensor) in our 
 [GridDB](docs.griddb.net ) and the we build an insert function to populate the 
-tables with a json file. In the Process we also need add ids to properly 
+tables with a json file. In the Process we also need to add ids to properly 
 reference our relational data points.
 
 
