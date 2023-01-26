@@ -94,10 +94,14 @@ capframex_data$info %>%
 |:-----------------|:--------------------------|:---------------------|:------------|:------------------------------------|:-----------------------------------------------|
 |AMD Ryzen 9 5900X |NVIDIA GeForce GTX 1080 Ti |16GB (2x8GB) 3200MT/s |Doom Eternal |Microsoft Windows 11 Pro Build 22000 |Gigabyte Technology Co. Ltd. B550I AORUS PRO AX |
 
+The info table contains the PC system hardware (Processor, GPU, RAM, Motherboard) 
+and software data (Game, Operating System).
+
+
 ```r
 capframex_data$capture %>% 
   select(TimeInSeconds, MsBetweenPresents) %>% 
-  head(n = 2) %>% 
+  head(n = 3) %>% 
   knitr::kable()
 ```
 
@@ -107,6 +111,24 @@ capframex_data$capture %>%
 |-------------:|-----------------:|
 |     0.0000000|            8.2026|
 |     0.0058994|            5.8994|
+|     0.0142062|            8.3068|
+
+The capture tables contains performance data. The first frame recorded at 
+time = 0 (`TimeInSeconds`) took 8.2ms (`MsBetweenPresents`) for the hardware to 
+render. The second frame took 5.9ms (`MsBetweenPresents`), so relative to the start of the session 
+0.0059 (`TimeInSeconds`) seconds had passed.
+
+We call this performance data because better hardware uses less time per 
+frame, which means it produces more frames per second (FPS) and therefore 
+the animations in game look smoother. But perceived smoothness is not only a 
+factor of the number of frames the hardware can render, but also affected by 
+the variation in frame to frame time; less variation is better. So, recurring
+large excursions in frame times can be an indicator of performance problems even
+if the average frame times are good (low).
+
+* `TimeInSeconds`: Time in seconds since the session was started
+* `MsBetweenPresents`: Time it took to render current frame, essentially `TimeInSeconds` (n) - `TimeInSeconds`(n - 1)
+
 
 ```r
 capframex_data$sensors %>% 
@@ -128,17 +150,39 @@ capframex_data$sensors %>%
 |       0.004|              0.004|  106.7973|          61.750|    1961.5|   234.502|              80|
 |       0.265|              0.261|  108.1045|          61.625|    1961.5|   211.884|              80|
 
+The sensor data's `MeasureTime` is like the capture data's `TimeInSeconds`; it tells the time since the session start. However, because the sensor data is polled in fixed intervals and not when a 
+new frame is generated, so the data-points don't related one-to-one.
+
+* `MeasureTime`: Time in seconds since the session was started
+* `BetweenMeasureTime`: exact time since previous measurement (approximately 250ms)
+* `cpu_power`: The CPU (processor) power consumption in Watts
+* `cpu_temperature`: The CPU temperature in degrees 
+* `gpu_clock`: The GPU (graphics card) clock speed in MHz
+* `gpu_power`: The GPU power consumption in Watts
+* `gpu_temperature`: The GPU temperature
+
+
 ## Loading CapFrameX data into GridDB
 
-We create three tables (Info, Capture, and Sensor) in our GridDB and the we 
-build an insert function to populate the tables with a json file. In the Process
-we also need add ids to properly reference our relational data points.
+We create three tables (Info, Capture, and Sensor) in our 
+[GridDB](docs.griddb.net ) and the we build an insert function to populate the 
+tables with a json file. In the Process we also need add ids to properly 
+reference our relational data points.
 
 
 
 ```r
 # We are using a docker based setup that can run this project ootb
 # it's available here: https://github.com/retowyss/rstudio-server-griddb-docker
+
+# You can set this up without docker, the containers use:
+
+# Latest version griddb                 https://docs.griddb.net
+# Latest version of R and tidyverse     R >= 4.0.0
+# Latest version of JDBC                https://github.com/griddb/jdbc
+
+# For general setup without docker you can follow this post:
+# https://griddb.net/en/blog/analyzing-nba-play-by-play-data-using-r-and-griddb/
 
 library(RJDBC)
 drv <- JDBC(
@@ -401,7 +445,7 @@ ggplot(doom_data, aes(x = MeasureTime, y = gpu_power, color = gpu)) +
   geom_line()
 ```
 
-![](pc-benchmarking-r-griddb_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+![](pc-benchmarking-r-griddb_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 
 The sudden drops in power are interesting; but they are not erroneous. They
 correspond to loading checkpoints, falling down cliffs, loading cinematics, etc.
@@ -414,7 +458,7 @@ ggplot(doom_data, aes(x = MeasureTime, y = gpu_temperature, color = gpu)) +
   geom_line()
 ```
 
-![](pc-benchmarking-r-griddb_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![](pc-benchmarking-r-griddb_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 The GTX 1650, which is the less powerful card, shows greater drops in temperature
 that correspond to checkpoint loading. This is likely because the thermal capacity
